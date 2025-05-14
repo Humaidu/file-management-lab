@@ -10,101 +10,116 @@
 # Get the target directory from argument, default to current directory if none is given
 TARGET_DIR="${1:-.}"
 
-# Temp files to store intermediate data
-TEMP_ALL_FILES=$(mktemp)
-TEMP_GROUPED=$(mktemp)
-TEMP_DUPLICATES=$(mktemp)
-TEMP_ACTION=$(mktemp)
+# Create temporary files to store intermediate data
+TEMP_ALL_FILES=$(mktemp)   # Stores size|path for all files
+TEMP_GROUPED=$(mktemp)     # Sorted version of above
+TEMP_ACTION=$(mktemp)      # size|hash|path for further grouping
+TEMP_DUPLICATES=$(mktemp)    # Stores paths of detected duplicates
 
-# Clean up temp files on exit
 cleanup() {
-    rm -f "$TEMP_ALL_FILES" "$TEMP_GROUPED" "$TEMP_DUPLICATES" "$TEMP_ACTION"
+    rm -f "$TEMP_ALL_FILES" "$TEMP_GROUPED" "$TEMP_ACTION" "$TEMP_DUPLICATES"
 }
 trap cleanup EXIT
+
+# Detect operating system to set correct commands
+OS=$(uname)
+if [[ "$OS" == "Darwin" ]]; then
+    # macOS: use stat -f and shasum
+    STAT_CMD='stat -f "%z|%N"'
+    HASH_CMD='shasum -a 256'
+else
+    # Linux: use stat -c and sha256sum
+    STAT_CMD='stat -c "%s|%n"'
+    HASH_CMD='sha256sum'
+fi
 
 echo "Scanning directory: $TARGET_DIR"
 echo
 
-# Step 1: Find all files and list their size and path
-# Output format: SIZE|FULL_PATH
-find "$TARGET_DIR" -type f -exec stat -c "%s|%n" {} + > "$TEMP_ALL_FILES"
+# List all files with size and path
+# Safely handle spaces/newlines with null-delimited input
+while IFS= read -r -d '' file; do
+    size=$(eval $STAT_CMD "\"$file\"" | cut -d'|' -f1)
+    echo "$size|$file"
+done < <(find "$TARGET_DIR" -type f -print0) > "$TEMP_ALL_FILES"
 
-# Step 2: Sort by size to group files of the same size
+# Sort by file size to group potentially duplicate files
 sort -n "$TEMP_ALL_FILES" > "$TEMP_GROUPED"
 
-# Step 3: For each group of same size, compute hashes and look for duplicates
+# For each group with same size, compute hashes
+# We assume files of different sizes cannot be duplicates
+
 prev_size=""
-> "$TEMP_DUPLICATES"
+> "$TEMP_ACTION"  #Clear the temp action file
 
 while IFS='|' read -r size filepath; do
     if [ "$size" != "$prev_size" ]; then
         # New file size group
-        declare -A hash_map
-        unset hash_map
         prev_size="$size"
     fi
 
-    # Compute SHA256 hash
-    hash=$(sha256sum "$filepath" | awk '{print $1}')
-
-    # Use temp file to track duplicates manually (no arrays)
-    echo "$size|$hash|$filepath" >> "$TEMP_ACTION"
-
+    if [ -f "$filepath" ]; then
+        # Compute hash of the file
+        hash=$($HASH_CMD "$filepath" | awk '{print $1}')
+        # Save size|hash|filepath to next processing stage
+        echo "$size|$hash|$filepath" >> "$TEMP_ACTION"
+    fi
 done < "$TEMP_GROUPED"
 
 # Group by size and hash to find duplicates
+# Using awk to collect file paths for identical files
 sort "$TEMP_ACTION" | awk -F'|' '
 {
     key = $1 "|" $2
-    file_map[key] = (file_map[key] ? file_map[key] RS $3 : $3)
+    files[key] = (files[key] ? files[key] "\n" $3 : $3)
     count[key]++
 }
 END {
-    index = 1
-    for (k in file_map) {
+    group = 1
+    for (k in files) {
         if (count[k] > 1) {
-            print "Group " index ":"
-            print file_map[k]
+            print "Group " group ":"
+            print files[k]
             print ""
-            print file_map[k] >> "'$TEMP_DUPLICATES'"
+            print files[k] >> "'$TEMP_DUPLICATES'"
             print "" >> "'$TEMP_DUPLICATES'"
-            index++
+            group++
         }
     }
 }
 '
 
-# Step 4: Handle duplicates
+# If no duplicates found, exit
 if [ ! -s "$TEMP_DUPLICATES" ]; then
     echo "No duplicates found."
     exit 0
 fi
 
+# Step 6: Prompt user for action
 echo "Duplicate files found."
-
-echo
 read -p "Would you like to delete (d), move (m), or skip (s) duplicate files? [d/m/s]: " action
 
 if [[ "$action" == "d" || "$action" == "m" ]]; then
-    if [ "$action" == "m" ]; then
+    if [[ "$action" == "m" ]]; then
         read -p "Enter directory to move duplicates to: " move_dir
         mkdir -p "$move_dir"
     fi
 
-    # Read each duplicate group and process files
+    # Go through the list of duplicates
     while read -r line; do
         if [ -z "$line" ]; then
+            # Empty line marks the start of a new group
             unset keep
             continue
         fi
 
         if [ -z "$keep" ]; then
-            # First file in group, keep it
+            # Keep the first file in each group
             keep="$line"
             continue
         fi
 
-        if [ "$action" == "d" ]; then
+        if [[ "$action" == "d" ]]; then
             echo "Deleting: $line"
             rm -f "$line"
         else
