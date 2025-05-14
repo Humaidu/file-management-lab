@@ -1,11 +1,9 @@
 #!/bin/bash
 
-# 1.Automatic File Sorter
-
+# ===============================================================================
+# Automatic File Sorter
 # Description: Create a script that organizes files in a folder based on their types. The script should scan a directory, find file extensions, and move files into suitable subfolders (e.g., Documents,Images, Videos).
-
-# Skills: File handling, string manipulation, if-else statements, making folders
-
+# ===============================================================================
 
 # Check if directory is given
 if [ -z "$1" ]; then

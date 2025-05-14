@@ -1,12 +1,10 @@
-# File Management Projects (Lab)
-
-## Automatic File Sorter
+# 1. Automatic File Sorter
 
 A simple Python script that automatically organizes files in a folder by their types (e.g., Documents, Images, Videos). This is a great utility to keep your directories clean and structured.
 
 ---
 
-### Features
+## Features
 
 - Automatically detects file types based on extensions.
 - Sorts files into categorized subfolders:
@@ -22,7 +20,7 @@ A simple Python script that automatically organizes files in a folder by their t
 
 ---
 
-### Skills
+## Skills
 
 - File handling
 - string manipulation
@@ -31,7 +29,7 @@ A simple Python script that automatically organizes files in a folder by their t
 
 ---
 
-### How It Works
+## How It Works
 
 1. The script defines a dictionary with common file types and their extensions.
 2. It scans the current directory.
@@ -41,7 +39,7 @@ A simple Python script that automatically organizes files in a folder by their t
 
 ---
 
-### 📦 Example
+## Example
 
 Before running the script:
 ```
@@ -67,10 +65,11 @@ After running the script:
 │ └── script.py
 ├── Others
 └── random.xyz
+```
 
 ---
 
-### How To Use
+## How To Use
 
 *1. Make the script executable*
 ```
@@ -85,7 +84,7 @@ chmod +x file_sorter.sh
 
 ---
 
-### Supported File Types
+## Supported File Types
 
 | **Category** | **Extensions**                          |
 |--------------|------------------------------------------|
