@@ -1,2 +1,4 @@
 .DS_Store
-test_folder
+test_folder/
+dup_folder/
+.DS_Store
