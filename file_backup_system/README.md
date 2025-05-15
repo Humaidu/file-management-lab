@@ -50,7 +50,7 @@ chmod +x file_backup_system.sh
 
 ---
 
-##  Examples
+## Examples
 
 **1. Full backup of a directory (required to specify source):**
 

@@ -48,7 +48,7 @@ chmod +x disk_space_analyzer.sh
 
 ---
 
-##  Examples
+## Examples
 
 **1. Analyze current directory without sorting or filtering:**
 

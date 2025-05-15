@@ -67,7 +67,7 @@ chmod +x file_encryption_tool.sh
 
 ---
 
-##  Examples
+## Examples
 
 **Encrypting a file:**
 
