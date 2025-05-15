@@ -1,11 +1,10 @@
-# 🗂️ File Management Projects
+# File Management Projects
 
-A collection of beginner-to-intermediate Bash and scripting projects designed to automate and simplify common file management tasks. 
-Each project lives in its own subfolder with its own documentation, and tackles a unique real-world problem like organizing, syncing, encrypting, or analyzing files and directories.
+A collection of beginner-to-intermediate Bash and scripting projects designed to automate and simplify common file management tasks. Each project has its subfolder with its documentation and tackles a unique real-world problem like organizing, syncing, encrypting, or analyzing files and directories.
 
 ---
 
-## 📁 Project List
+## Project List
 
 | # | Project | Description | Skills |
 |---|---------|-------------|--------|
@@ -19,7 +18,7 @@ Each project lives in its own subfolder with its own documentation, and tackles 
 
 ---
 
-## 📌 How to Use
+## How to Use
 
 Each project is self-contained. Navigate to a project folder to view its:
 
@@ -38,7 +37,7 @@ cd your-repo-name/automatic_file_sorter
 
 ---
 
-## 🧠 Learning Goals
+## Learning Goals
 
 - These projects are designed to help you strengthen your understanding of:
 - File and directory manipulation in Bash
